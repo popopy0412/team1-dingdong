@@ -27,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -53,13 +54,10 @@ public class MakeGeneralReservationUseCase implements UseCase<MakeGeneralReserva
     }
 
     private void checkHasDuplicatedReservation(Long userId, List<Param.ReservationInfo.ReservationDate> hopeTimes) {
-        for (int i = 0; i < hopeTimes.size() - 1; i++) {
-            for (int j = i + 1; j < hopeTimes.size(); j++) {
-                if (hopeTimes.get(i).getDate().isEqual(hopeTimes.get(j).getDate())) {
-                    throw ReservationErrors.DUPLICATED_RESERVATION_DATE.toException();
-                }
-            }
-        }
+        boolean hasDuplicates = hopeTimes.stream()
+                .map(Param.ReservationInfo.ReservationDate::getDate)
+                .collect(Collectors.toSet()).size() < hopeTimes.size();
+        if (hasDuplicates) throw ReservationErrors.DUPLICATED_RESERVATION_DATE.toException();
         for (Param.ReservationInfo.ReservationDate hopeTime : hopeTimes) {
             reservationManagement.checkHasDuplicatedReservation(userId, hopeTime.date);
         }

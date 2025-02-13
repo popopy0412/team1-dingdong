@@ -8,8 +8,6 @@ import com.ddbb.dingdong.domain.reservation.service.ReservationErrors;
 import com.ddbb.dingdong.domain.reservation.service.ReservationManagement;
 import com.ddbb.dingdong.infrastructure.auth.encrypt.TokenManager;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
@@ -20,8 +18,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -42,13 +40,10 @@ public class RequestGeneralReservationUseCase implements UseCase<RequestGeneralR
     }
 
     private void checkHasDuplicatedReservation(Long userId, List<RequestGeneralReservationUseCase.Param.ReservationInfo> hopeTimes) {
-        for (int i = 0; i < hopeTimes.size() - 1; i++) {
-            for (int j = i + 1; j < hopeTimes.size(); j++) {
-                if (hopeTimes.get(i).getDate().isEqual(hopeTimes.get(j).getDate())) {
-                    throw ReservationErrors.DUPLICATED_RESERVATION_DATE.toException();
-                }
-            }
-        }
+        boolean hasDuplicates = hopeTimes.stream()
+                .map(Param.ReservationInfo::getDate)
+                .collect(Collectors.toSet()).size() < hopeTimes.size();
+        if (hasDuplicates) throw ReservationErrors.DUPLICATED_RESERVATION_DATE.toException();
         for (RequestGeneralReservationUseCase.Param.ReservationInfo hopeTime : hopeTimes) {
             reservationManagement.checkHasDuplicatedReservation(userId, hopeTime.date);
         }
