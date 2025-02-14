@@ -11,6 +11,7 @@ import com.ddbb.dingdong.domain.reservation.entity.vo.Direction;
 import com.ddbb.dingdong.domain.reservation.entity.vo.ReservationStatus;
 import com.ddbb.dingdong.domain.reservation.entity.vo.ReservationType;
 import com.ddbb.dingdong.domain.reservation.repository.BusStopRepository;
+import com.ddbb.dingdong.domain.reservation.repository.ReservationRepository;
 import com.ddbb.dingdong.domain.reservation.service.ReservationErrors;
 import com.ddbb.dingdong.domain.reservation.service.ReservationManagement;
 import com.ddbb.dingdong.domain.transportation.entity.BusSchedule;
@@ -34,6 +35,7 @@ public class MakeTogetherReservationUseCase implements UseCase<MakeTogetherReser
     private final BusStopRepository busStopRepository;
     private final TokenManager tokenManager;
     private final BusScheduleRepository busScheduleRepository;
+    private final ReservationRepository reservationRepository;
 
     @Transactional
     @Override
@@ -41,6 +43,7 @@ public class MakeTogetherReservationUseCase implements UseCase<MakeTogetherReser
         validateToken(param);
         LocalDateTime hopeTime = extractTimeFromBusSchedule(param);
         checkHasDuplicatedReservation(param.reservationInfo.userId, hopeTime);
+        checkValidateReservation(param);
         reserve(param);
         pay(param);
 
@@ -49,6 +52,10 @@ public class MakeTogetherReservationUseCase implements UseCase<MakeTogetherReser
 
     private void checkHasDuplicatedReservation(Long userId, LocalDateTime hopeTime) {
         reservationManagement.checkHasDuplicatedReservation(userId, hopeTime);
+    }
+
+    private void checkValidateReservation(Param param) {
+        Reservation reservation = reservationRepository.findPendingReservation(userId, scheduleId);
     }
 
     private LocalDateTime extractTimeFromBusSchedule(MakeTogetherReservationUseCase.Param param) {
