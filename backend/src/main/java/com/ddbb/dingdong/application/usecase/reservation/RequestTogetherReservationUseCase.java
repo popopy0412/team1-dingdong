@@ -36,13 +36,13 @@ public class RequestTogetherReservationUseCase implements UseCase<RequestTogethe
     public Result execute(Param param) {
         LocalDateTime hopeTime = extractTimeFromBusSchedule(param);
         checkHasDuplicatedReservation(param.userId, hopeTime);
-        Reservation reservation = temporaryReserve(param.userId, param.busScheduleId);
-        String token = generateToken(reservation);
+        temporaryReserve(param.userId, param.busScheduleId);
+        String token = generateToken(param);
         return new Result(token);
     }
 
-    private String generateToken(Reservation reservation) {
-        return tokenManager.generateToken(reservation);
+    private String generateToken(Param param) {
+        return tokenManager.generateToken(param);
     }
 
     private void checkHasDuplicatedReservation(Long userId, LocalDateTime hopeTime) {

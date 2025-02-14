@@ -28,7 +28,6 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     """)
     Optional<Reservation> findPendingReservation(
             @Param("userId") Long userId,
-            @Param("status") ReservationStatus status,
             @Param("time") LocalDateTime time
     );
             // TODO 예매가 유효한지 검증

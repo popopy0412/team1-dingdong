@@ -65,6 +65,7 @@ public interface ReservationQueryRepository extends JpaRepository<Reservation, L
          ( r.direction = 'TO_HOME' AND r.departureTime = :time )
         )
         AND r.userId = :userId
+        AND r.status = 'ALLOCATED'
     """)
     List<ReservationIdProjection> findReservationIdByUserIdAndTime(
             @Param("userId") Long userId,

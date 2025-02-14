@@ -55,7 +55,16 @@ public class MakeTogetherReservationUseCase implements UseCase<MakeTogetherReser
     }
 
     private void checkValidateReservation(Param param) {
-        Reservation reservation = reservationRepository.findPendingReservation(userId, scheduleId);
+        BusSchedule busSchedule = busScheduleRepository.findById(param.reservationInfo.busScheduleId).orElseThrow(ReservationErrors.BUS_SCHEDULE_NOT_FOUND::toException);
+        Reservation reservation = reservationRepository.findPendingReservation(
+                param.reservationInfo.userId,
+                busSchedule.getDirection().equals(Direction.TO_SCHOOL)
+                        ? busSchedule.getArrivalTime()
+                        : busSchedule.getDepartureTime())
+                .orElseThrow(ReservationErrors.RESERVATION_NOT_FOUND::toException);
+        Ticket ticket = new Ticket(param.reservationInfo.userId, param.reservationInfo.busScheduleId, param.reservationInfo.busStopId, reservation);
+        reservation.allocate(ticket);
+        reservationRepository.save(reservation);
     }
 
     private LocalDateTime extractTimeFromBusSchedule(MakeTogetherReservationUseCase.Param param) {
