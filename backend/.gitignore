@@ -39,3 +39,4 @@ application-prod.yml
 .vscode/
 
 src/main/resources/static/map.html
+.env
